@@ -45,7 +45,7 @@ def HandleResponse(data,message,success = True,err = 'no err',resp_status = stat
     },status = resp_status)
 
 class TableAPI(APIView):
-    '''GET POST request for Tables'''
+
     def get(self,request):
         data = Table.objects.all()
         serializer = TableSerializer(data,many=True)
@@ -60,6 +60,7 @@ class TableAPI(APIView):
         return HandleResponse("no data",'Could not create a Table',False,serializer.errors,status.HTTP_404_NOT_FOUND)
 
 class TableDeateilAPI(APIView):
+    
     def get_table(self,id):
         try:
             return Table.objects.get(id=id)
@@ -107,6 +108,7 @@ class DepartmentDetailAPI(APIView):
         return HandleResponse('no data',f"Department {id} is deleted")
 
 class MealCategoryAPI(APIView):
+    
     def get(self,request):
         data = MealCategory.objects.all()
         serializer = MealCategorySeriailizer(data,many=True)
@@ -121,6 +123,7 @@ class MealCategoryAPI(APIView):
         return HandleResponse('no data','Json format is wrong',False,meal_category.errors,status.HTTP_400_BAD_REQUEST)
 
 class MealCategoryDetailAPI(APIView):
+    
     def get_meal_category(self,id):
         try:
             return MealCategory.objects.get(id=id)
@@ -146,6 +149,7 @@ class MealCategoryDetailAPI(APIView):
         return data
 
 class StatusAPI(APIView):
+    
     def get(self,request):
         data = Status.objects.all()
         serializer = StatusSerializer(data,many = True)
@@ -160,6 +164,7 @@ class StatusAPI(APIView):
         return HandleResponse('no data','Could not create Status',False,serializer.errors,status.HTTP_400_BAD_REQUEST)
 
 class StatusDetailAPI(APIView):
+    
     def delete(self,request,id):
         try:
             Status.objects.get(id = id)
@@ -171,6 +176,7 @@ class StatusDetailAPI(APIView):
         return HandleResponse('no data','Status successfully deleted')        
 
 class MealAPI(APIView):
+    
     def get(self,request):
         data = Meal.objects.all()
         serialized = MealSerializer(data,many = True)

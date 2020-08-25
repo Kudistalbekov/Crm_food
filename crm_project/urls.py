@@ -37,14 +37,16 @@ from crm_app.views  import(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('tables/',TableAPI.as_view()),
-    path('tables/<int:id>/',TableDeateilAPI.as_view()),
+
     path('roles/',RoleAPI.as_view()),
-    path('roles/<int:id>/',RoleDetailAPI    .as_view()),
-    path('departments/',DepartmentAPI.as_view()),
-    path('departments/<int:id>/',DepartmentDetailAPI.as_view()),
+    path('roles/<int:id>/',RoleDetailAPI.as_view()),
     path('users/',UserAPI.as_view()),
     path('users/<int:id>/',UserDetailAPI.as_view()),
+    
+    path('tables/',TableAPI.as_view()),
+    path('tables/<int:id>/',TableDeateilAPI.as_view()),
+    path('departments/',DepartmentAPI.as_view()),
+    path('departments/<int:id>/',DepartmentDetailAPI.as_view()),
     path('mealCategories/',MealCategoryAPI.as_view()),
     path('mealCategories/<int:id>/',MealCategoryDetailAPI.as_view()),
     path('categoriesByDepartment/<int:id>/',MealCategoryDetailAPI.as_view()),
