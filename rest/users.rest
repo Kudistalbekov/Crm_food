@@ -1,0 +1,30 @@
+### User
+GET http://127.0.0.1:8000/users/ HTTP/1.1
+
+### 
+PUT  http://127.0.0.1:8000/users/ HTTP/1.1 
+content-type: application/json
+
+{
+  "id": 5,
+  "name": "Kudaibergen",
+  "surname": "Stalbekov",
+  "password": "mypassword",
+  "email": "kudaibergenstalbekov@example.com",
+  "phone": "0551014345"
+}
+
+###
+POST http://127.0.0.1:8000/users/ HTTP/1.1
+content-type: application/json
+
+{
+  "name": "Kudi",
+  "surname": "Stalbekov",
+  "email": "kudaibergenstalbekov@gmail.com",
+  "roleid": 5,
+  "phone": "0777777777"
+}
+
+###
+DELETE http://127.0.0.1:8000/users/7/ HTTP/1.1

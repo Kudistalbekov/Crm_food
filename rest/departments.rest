@@ -1,0 +1,13 @@
+### Department
+GET http://127.0.0.1:8000/departments/ HTTP/1.1
+
+###
+POST http://127.0.0.1:8000/departments/ HTTP/1.1
+content-type: application/json
+
+{
+  "name": "kitchen"
+}
+
+###
+DELETE http://127.0.0.1:8000/departments/1/ HTTP/1.1

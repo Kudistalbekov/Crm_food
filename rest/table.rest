@@ -1,0 +1,15 @@
+### Table
+GET http://127.0.0.1:8000/tables/ HTTP/1.1
+
+###
+POST http://127.0.0.1:8000/tables/ HTTP/1.1
+content-type: application/json
+
+{
+  "name": "Table #3"
+}
+
+###
+DELETE http://127.0.0.1:8000/tables/7/ HTTP/1.1
+
+

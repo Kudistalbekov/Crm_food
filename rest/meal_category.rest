@@ -1,0 +1,17 @@
+### Role
+GET http://127.0.0.1:8000/mealCategories/ HTTP/1.1
+
+###
+POST http://127.0.0.1:8000/mealCategories/ HTTP/1.1
+content-type: application/json
+
+{
+  "name": "Test",
+  "department_id": 5
+}
+
+###
+DELETE http://127.0.0.1:8000/mealCategories/6/ HTTP/1.1
+
+### 
+GET http://127.0.0.1:8000/categoriesByDepartment/4/ HTTP/1.1
