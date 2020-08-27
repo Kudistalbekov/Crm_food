@@ -1,7 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager,AbstractBaseUser
+from django.contrib.auth.models import BaseUserManager,AbstractBaseUser,PermissionsMixin
 from django.utils import timezone
-
+from rest_framework import exceptions
 # Create your models here.
 
 class UserRole(models.Model):
@@ -23,9 +23,9 @@ class MyUserManager(BaseUserManager):
             email = self.normalize_email(email),
             login  = login,
         )
-        
+
         user.set_password(password)
-        user.save(using=self._db)
+        user.save(using=self.db)
         return user
     
     def create_superuser(self,login,email,password):
@@ -37,10 +37,10 @@ class MyUserManager(BaseUserManager):
         user.is_admin = True 
         user.is_staff = True
         user.is_superuser = True
-        user.save(using=self._db)
+        user.save(using=self.db)
         return user
 
-class MyUser(AbstractBaseUser):
+class MyUser(AbstractBaseUser,PermissionsMixin):
     name = models.CharField(max_length=30,name='name')
     surname = models.CharField(max_length=30,name='surname')
     login = models.CharField(max_length=30,unique=True,null=True,name='login')

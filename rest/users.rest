@@ -9,7 +9,7 @@ content-type: application/json
   "id": 2,
   "name": "Kudaibergen",
   "surname": "Stalbekov",
-  "password": "mypassword",
+  "password": "131321",
   "email": "stalbekovkudaibergen@example.com",
   "phone": "0551014345"
 }
@@ -28,3 +28,12 @@ content-type: application/json
 
 ###
 DELETE http://127.0.0.1:8000/users/3/ HTTP/1.1
+
+###
+POST http://127.0.0.1:8000/login/ HTTP/1.1
+content-type: application/json
+
+{
+  "login":"kudi",
+  "password":164137
+}

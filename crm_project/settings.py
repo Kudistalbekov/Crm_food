@@ -30,12 +30,15 @@ DEBUG = config('DEBUG')
 ALLOWED_HOSTS = []
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
     'crm_app.apps.CrmAppConfig',
     'crm_user.apps.CrmUserConfig',
     'django.contrib.admin',
+    'rest_framework',
+    'rest_framework.authtoken',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
