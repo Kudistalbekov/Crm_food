@@ -11,8 +11,7 @@ class RoleSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
-        fields = ['id','name','surname','password','login','email','roleid','dateofadd','phone']
-        extra_kwargs = {'password':{'write_only':True}}
+        fields = ['id','name','surname','login','email','roleid','dateofadd','phone']
 
 class UpdateUserSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False,write_only = True)
