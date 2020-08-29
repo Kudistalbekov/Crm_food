@@ -22,7 +22,7 @@ class MyUserManager(BaseUserManager):
         new_user = self.model(email = self.normalize_email(email),login  = login)
 
         new_user.set_password(password)
-        new_user.save(using=self.db)
+        new_user.save(using=self._db)
         return new_user
     
     def create_superuser(self,login,email,password):
@@ -34,7 +34,7 @@ class MyUserManager(BaseUserManager):
         user.admin = True 
         user.staff = True
         user.superuser = True
-        user.save(using=self.db)
+        user.save(using=self._db)
         return user
 
 class MyUser(AbstractBaseUser,PermissionsMixin):

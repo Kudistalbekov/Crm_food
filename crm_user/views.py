@@ -88,13 +88,7 @@ class UserAPI(APIView):
         jsondata = request.data
         data = UserSerializer(data=jsondata)
         if data.is_valid():
-            ser_user = data.save()
-
-            user = User.objects.get(id = ser_user.id)
-            user.login = user.name + '_' + user.surname
-            user.password = user.phone
-            user.save()
-            
+            user = data.save()
             return HandleResponse(user.login,'User is created',resp_status=status.HTTP_201_CREATED)
         return HandleResponse('no data','Could not create User',False,data.errors,status.HTTP_400_BAD_REQUEST)
     

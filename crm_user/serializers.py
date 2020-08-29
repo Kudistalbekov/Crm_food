@@ -11,7 +11,19 @@ class RoleSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
-        fields = ['id','name','surname','login','email','roleid','dateofadd','phone']
+        fields = ['id','name','surname','login','email','roleid','phone']
+    
+    def create(self, validated_data):
+        name = validated_data.pop('name')
+        surname = validated_data.pop('surname')
+        email = validated_data.pop('email')
+        phone = validated_data.pop('phone')
+        user = MyUser.objects.create_user(name+'_'+surname,email,phone)
+        user.name = name
+        user.surname = surname
+        user.roleid = validated_data.pop('roleid')
+        user.save()
+        return user
 
 class UpdateUserSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False,write_only = True)
