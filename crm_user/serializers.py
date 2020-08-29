@@ -14,14 +14,15 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id','name','surname','login','email','roleid','phone']
     
     def create(self, validated_data):
-        name = validated_data.pop('name')
-        surname = validated_data.pop('surname')
-        email = validated_data.pop('email')
-        phone = validated_data.pop('phone')
+        '''method for creating user'''
+        name = validated_data.get('name')
+        surname = validated_data.get('surname')
+        email = validated_data.get('email')
+        phone = validated_data.get('phone')
         user = MyUser.objects.create_user(name+'_'+surname,email,phone)
         user.name = name
         user.surname = surname
-        user.roleid = validated_data.pop('roleid')
+        user.roleid = validated_data.get('roleid')
         user.save()
         return user
 
@@ -29,11 +30,25 @@ class UpdateUserSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False,write_only = True)
     name = serializers.CharField(required=False,write_only = True)
     surname = serializers.CharField(required=False,write_only = True)
-    password = serializers.CharField(required=False,write_only = True)
     login = serializers.CharField(required=False,write_only = True)
     email = serializers.CharField(required=False,write_only = True)
     roleid = serializers.CharField(required=False,write_only = True)
     phone = serializers.CharField(required=False,write_only = True)
+
+    def update(self,user, validated_data):
+        # * validated_data.get(arg1,arg2) means
+        # * it will try to take from validated_data arg1 
+        # * if arg1 does not there it will take by default arg2
+
+        user.name = validated_data.get('name',user.name)
+        user.surname = validated_data.get('surname',user.surname)
+        user.login = validated_data.get('login',user.login)
+        user.email = validated_data.get('email',user.email)
+        user.roleid = validated_data.get('roleid',user.roleid)
+        user.phone = validated_data.get('phone',user.phone)
+        user.save()
+        
+        return user
 
 class LoginSerializer(serializers.Serializer):
     login = serializers.CharField()

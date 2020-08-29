@@ -86,6 +86,7 @@ class UserAPI(APIView):
 
     def post(self,request):
         jsondata = request.data
+        # * since we are passing just data it will call serializers create functions
         data = UserSerializer(data=jsondata)
         if data.is_valid():
             user = data.save()
@@ -94,16 +95,18 @@ class UserAPI(APIView):
     
     def put(self,request):
         jsondata = request.data
-        serializer = UpdateUserSerializer(data = jsondata)
-        if serializer.is_valid():
-            user = self.get_user(jsondata['id'])
-            if not(type(user) == Response):
-                # updating the user
-                for o in jsondata:
-                    setattr(user,o,jsondata[o])
-                user.save()
-                return HandleResponse('no data','User was updated',resp_status=status.HTTP_200_OK)
+        user = self.get_user(jsondata['id'])
+        
+        if type(user) == Response:
             return user
+        
+        # * since we are passing instance and validated_data
+        # * method save will call update method
+
+        serializer = UpdateUserSerializer(user,data = jsondata)
+        if serializer.is_valid():
+            serializer.save()
+            return HandleResponse('no data','User was updated',resp_status=status.HTTP_200_OK)
         return HandleResponse('no data','Json format is wrong',True,serializer.errors,status.HTTP_404_NOT_FOUND)
 
 class UserDetailAPI(APIView):
@@ -124,7 +127,6 @@ class UserDetailAPI(APIView):
             return data
 
         data.delete()
-        
         return HandleResponse('no data',f"User {id} deleted",resp_status = status.HTTP_200_OK)
 
 class LoginAPI(APIView):
@@ -136,4 +138,3 @@ class LoginAPI(APIView):
         login(request,user)
         token,created = Token.objects.get_or_create(user = user)
         return HandleResponse({"token":token.key},"Token of user")
-

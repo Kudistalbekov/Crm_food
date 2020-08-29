@@ -31,6 +31,7 @@ class MyUserManager(BaseUserManager):
             email = email,
             password = password
         )
+        
         user.admin = True 
         user.staff = True
         user.superuser = True
