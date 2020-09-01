@@ -6,7 +6,7 @@ from crm_user.views import(
     UserDetailAPI,
     RoleAPI,
     LoginAPI, 
-    RoleDetailAPI
+    RoleDetailAPI,
 )
 
 from crm_app.views  import(
@@ -20,7 +20,11 @@ from crm_app.views  import(
     MealCategoryDetailAPI,
     StatusAPI,
     StatusDetailAPI,
-   
+    OrderAPI,
+    OrderDetailAPI,
+    GetOpenStatusAPI,
+    CheckAPI,
+    CheckDetailAPI,
 )
 
 urlpatterns = [
@@ -43,5 +47,10 @@ urlpatterns = [
     path('statuses/<int:id>/',StatusDetailAPI.as_view()),
     path('meals/',MealAPI.as_view()),
     path('meals/<int:id>/',MealDetailAPI.as_view()),
-    path('mealsByCategory/<int:id>/',MealDetailAPI.as_view())
+    path('mealsByCategory/<int:id>/',MealDetailAPI.as_view()),
+    path('orders/',OrderAPI.as_view()),
+    path('orders/<int:id>/',OrderDetailAPI.as_view()),
+    path('getopenstatus/',GetOpenStatusAPI.as_view()),
+    path('checks/',CheckAPI.as_view()),
+    path('checks/<int:id>/',CheckDetailAPI.as_view())
 ]

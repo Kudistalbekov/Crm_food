@@ -24,7 +24,10 @@ from crm_app.serializers import (
                                     MealCategorySeriailizer,
                                     StatusSerializer,
                                     MealSerializer,
-                                    MealSerializerUpdate)
+                                    MealSerializerUpdate,
+                                    OrderSerializer,
+                                    CheckSerializer,
+                                    CheckPostSerializer)
 
 # Create your views here.
 def HandleResponse(data,message,success = True,err = 'no err',resp_status = status.HTTP_200_OK):
@@ -235,3 +238,62 @@ class ServicePercentageAPI(APIView):
 
 class ServicePercentageDetail(APIView):
     pass
+
+class OrderAPI(APIView):
+    def get(self,request):
+        data = Order.objects.all()
+        serialized = OrderSerializer(data,many = True)
+        return HandleResponse(serialized.data,'List of Orders')
+
+    def post(self,request):
+        data = request.data
+        serializer = OrderSerializer(data = data)
+        if serializer.is_valid():
+            serializer.save()
+            return HandleResponse('no data','New order is created !',resp_status=status.HTTP_201_CREATED)
+        return HandleResponse('no data','New order could not be created',False,serializer.errors,status.HTTP_400_BAD_REQUEST) 
+
+class OrderDetailAPI(APIView):
+    
+    def delete(self,request,id):
+        try:
+            Order.objects.get(id=id)
+        except Order.DoesNotExist:
+            return HandleResponse('no data','Could not get data',False,'order does not exist',status.HTTP_404_NOT_FOUND)
+        
+        order = Order.objects.get(id=id)
+        order.delete()
+        return HandleResponse('no data','Order is deleted')
+
+class GetOpenStatusAPI(APIView):
+    
+    def get(self,request):
+        data = Order.objects.filter(isitopen = 1)
+        serializer = OrderSerializer(data,many=True)
+        return HandleResponse(serializer.data,'List of opened orders')
+
+class CheckAPI(APIView):
+    def get(self,request):
+        data = Check.objects.all()
+        check = CheckSerializer(data,many = True)
+        return HandleResponse(check.data,'List of all checks')
+
+    def post(self,request):
+        serializer_check = CheckPostSerializer(data=request.data)
+        if serializer_check.is_valid():
+            serializer_check.save()
+            return HandleResponse(serializer_check.data,
+            'Check is created',resp_status=status.HTTP_201_CREATED)
+        return HandleResponse('no data','Could not create check',False,serializer_check.errors,status.HTTP_400_BAD_REQUEST)
+
+class CheckDetailAPI(APIView):
+
+    def delete(self,request,id):
+        try:
+            Check.objects.get(id = id)
+        except Check.DoesNotExist:
+            return HandleResponse('no data','Could not Delete',False,'Does not exist',status.HTTP_404_NOT_FOUND)
+
+        check = Check.objects.get(id = id)
+        check.delete()
+        return HandleResponse('no data','Check was deleted')

@@ -1,0 +1,29 @@
+GET http://127.0.0.1:8000/orders/ HTTP/1.1
+
+###
+POST http://127.0.0.1:8000/orders/ HTTP/1.1
+content-type: application/json
+
+{
+    "waiter_id": 8,
+    "table_id": 4,
+    "isitopen": 1,
+    "orderedmeals" : [
+        {
+            "meal_id": 3,
+            "name": "cake",
+            "count": 3
+        },
+        {
+            "meal_id": 2,
+            "name": "lagman",
+            "count": 2
+        }
+    ]
+}
+
+###
+DELETE http://127.0.0.1:8000/orders/44/ HTTP/1.1
+
+###
+GET http://127.0.0.1:8000/getopenstatus/ HTTP/1.1

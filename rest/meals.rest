@@ -6,19 +6,19 @@ content-type: application/json
 
 {
     "name": "cake",
-    "category_id": 8,
-    "price": 250,
-    "description": ""
+    "category_id": 3,
+    "price": 200,
+    "description": "cake is sweet"
 }
 ###
 PUT http://127.0.0.1:8000/meals/ HTTP/1.1
 content-type: application/json
 
 {
-  "id": 4,
-  "name": "plov",
-  "price": 250,
-  "description": "dfghjkdfghjn"
+  "id": 2,
+  "name": "lagman",
+  "price": 100,
+  "description": "lagman is nices"
 }
 ###
 DELETE http://127.0.0.1:8000/meals/8/ HTTP/1.1

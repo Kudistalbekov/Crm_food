@@ -11,7 +11,9 @@ from rest_framework.authtoken.models import Token
 from crm_user.models import MyUser as User , UserRole as Role
 from django.contrib.auth import login
 from django.shortcuts import render
-# Create your views here.
+
+# Create your views here
+
 from crm_user.serializers import(
     RoleSerializer,
     UpdateUserSerializer,
@@ -69,6 +71,7 @@ class RoleDetailAPI(APIView):
         return HandleResponse('no data',f"Role {id} is deleted")
 
 class UserAPI(APIView):
+    
     def get_user(self,id):
         try:
             return User.objects.get(id=id)
@@ -110,6 +113,7 @@ class UserAPI(APIView):
         return HandleResponse('no data','Json format is wrong',True,serializer.errors,status.HTTP_404_NOT_FOUND)
 
 class UserDetailAPI(APIView):
+    
     def get_user(self,id):
         try:
             return User.objects.get(id=id)
@@ -130,7 +134,7 @@ class UserDetailAPI(APIView):
         return HandleResponse('no data',f"User {id} deleted",resp_status = status.HTTP_200_OK)
 
 class LoginAPI(APIView):
-    
+
     def post(self,request):
         serializer = LoginSerializer(data = request.data)
         serializer.is_valid(raise_exception = True)
