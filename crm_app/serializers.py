@@ -77,13 +77,35 @@ class MealSerializerUpdate(serializers.Serializer):
     price = serializers.CharField(required=False)
     description = serializers.CharField(required=False,allow_blank=True)
 
+class OrderedCheckMealSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderedMeal
+        fields = ['meal_id','name','count','total_sum']
+    
+    def to_representation(self,data):
+        new_data = super(OrderedCheckMealSerializer,self).to_representation(data)
+        meal = Meal.objects.get(id = new_data['meal_id'])
+        return {
+            'meal_id':new_data['meal_id'],
+            'name':new_data['name'],
+            'price':meal.price,
+            'count':new_data['count'],
+            'total_sum':new_data['total_sum']
+        }
+
+
+class OrderCheckSerializer(serializers.ModelSerializer):
+    orderedmeals = OrderedCheckMealSerializer(many = True)
+    class Meta:
+        model = Order
+        fields = ('id','date','orderedmeals')
+       
 class CheckSerializer(serializers.ModelSerializer):
-    order_id = OrderSerializer()
+    order_id = OrderCheckSerializer()
     class Meta:
         model = Check
         fields = ('id','order_id','servicefee','totalsum')
     
-    # TODO add price of meal
     def to_representation(self,data):
         new_data = super(CheckSerializer,self).to_representation(data)
         return {

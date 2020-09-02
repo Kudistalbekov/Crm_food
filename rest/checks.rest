@@ -5,8 +5,9 @@ POST http://127.0.0.1:8000/checks/ HTTP/1.1
 content-type: application/json
 
 {
-    "order_id" : 48
+    "order_id" : 2
 }
 
+###TODO make ordered meals deleted as well when cheks are deleted
 ###
-DELETE http://127.0.0.1:8000/checks/1/ HTTP/1.1
+DELETE http://127.0.0.1:8000/checks/2/ HTTP/1.1

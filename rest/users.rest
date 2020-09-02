@@ -34,6 +34,6 @@ POST http://127.0.0.1:8000/login/ HTTP/1.1
 content-type: application/json
 
 {
-  "login":"kudi",
-  "password":164137
+  "login":"Kudaibergen_Stalbekov",
+  "password":"0777777777"
 }
