@@ -39,6 +39,50 @@ class OrderedMealSerializer(serializers.ModelSerializer):
         model = OrderedMeal
         fields = ['meal_id','name','count']
 
+
+# * first serializer will give me id of order 
+# * and rest will take using OrderedMealSerializer
+# * reverse access
+
+class OrdersOrderedMealSerializer(serializers.ModelSerializer):
+        orderedmeals = OrderedMealSerializer(many = True)
+        class Meta:
+            model = Order
+            fields = ['id','orderedmeals']
+    
+        #TODO {1} create orderedmeal if does not exist
+        #TODO {2} if ordered meal exist increase count
+        #TODO {3} check the names of ordered meals if they don't match return error 
+        # * validate will be used when creating orderedmeal
+        def validate(self,validated_data):
+            order = Order.objects.get(id = self.context['order_id'])
+            for orderedmeal in validated_data['orderedmeals']:
+                # {3}
+                try:
+                    Meal.objects.get(id = orderedmeal['meal_id'].id,name = orderedmeal['name'])
+                except Meal.DoesNotExist:
+                    err = f'name ({orderedmeal["name"]}) does not match with meal.name'
+                    raise serializers.ValidationError({'name error':err})
+                # {1}
+                try:
+                    OrderedMeal.objects.get(order_id = order,meal_id = orderedmeal['meal_id'])
+                except OrderedMeal.DoesNotExist:
+                    new_ordered = OrderedMeal.objects.create(**orderedmeal,order_id = order)
+                    meal = Meal.objects.get(id = getattr(new_ordered.meal_id,'id'))
+                    new_ordered.total_sum = new_ordered.count*int(meal.price)
+                    new_ordered.save()
+                    continue
+                #{2}
+                update_ordered = OrderedMeal.objects.get(order_id = order,meal_id = orderedmeal['meal_id']) 
+                update_ordered.count+=orderedmeal.get('count',1)
+                meal = Meal.objects.get(id = getattr(update_ordered.meal_id,'id'))
+                update_ordered.total_sum = update_ordered.count*int(meal.price)
+                update_ordered.save()
+            return update_ordered
+
+        # * update will be used when deleting ordered_meal
+        def update(self,orderedmeal,validated_data):
+            pass
 class OrderSerializer(serializers.ModelSerializer):
     # TODO remember this
     # * orderedmeals is taken from reverse lookup name field
@@ -139,3 +183,4 @@ class StatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Status
         fields = ('id','name')
+

@@ -16,7 +16,8 @@ from crm_app.models import (
                             Order,
                             Check,
                             ServicePercentage,
-                            Status)
+                            Status,
+                            OrderedMeal)
 
 from crm_app.serializers import (
                                     TableSerializer,
@@ -27,7 +28,10 @@ from crm_app.serializers import (
                                     MealSerializerUpdate,
                                     OrderSerializer,
                                     CheckSerializer,
-                                    CheckPostSerializer)
+                                    CheckPostSerializer,
+                                    OrderedMealSerializer,
+                                    OrdersOrderedMealSerializer,
+                                    )
 
 # Create your views here.
 def HandleResponse(data,message,success = True,err = 'no err',resp_status = status.HTTP_200_OK):
@@ -297,3 +301,28 @@ class CheckDetailAPI(APIView):
         check = Check.objects.get(id = id)
         check.delete()
         return HandleResponse('no data','Check was deleted')
+
+class MealsToOrderAPI(APIView):
+    def post(self,request):
+        try:
+            Order.objects.get(id=request.data.get('order_id'))
+        except:
+            return HandleResponse('no data','Order with this id does not exist',False,'not found order',status.HTTP_404_NOT_FOUND)
+        # * we can use "context" to pass extra value
+        serializer = OrdersOrderedMealSerializer(data = request.data, context={'order_id': request.data.get('order_id')})
+        if serializer.is_valid():
+            return HandleResponse('no data','meals added',resp_status=status.HTTP_201_CREATED)
+        return HandleResponse('no data','Could not add meals',False,serializer.errors,status.HTTP_400_BAD_REQUEST)
+    
+    def put(self,request):
+        return HandleResponse('no data','Ordered meal is deleted')
+
+class MealsToOrderDetailAPI(APIView):
+    def get(self,request,id):
+        try:
+            Order.objects.get(id = id)
+        except Order.DoesNotExist:
+            return HandleResponse('no data','Could not get data',False,'order does not exist',status.HTTP_404_NOT_FOUND)
+        order = Order.objects.get(id = id)
+        serializer = OrdersOrderedMealSerializer(order)
+        return HandleResponse(serializer.data,'List of ordered_meal of order')
