@@ -6,8 +6,8 @@ POST http://127.0.0.1:8000/roles/ HTTP/1.1
 content-type: application/json
 
 {
-  "name": "Bill boy"
+  "name": "Test"
 }
 
 ###
-DELETE http://127.0.0.1:8000/roles/4/ HTTP/1.1
+DELETE http://127.0.0.1:8000/roles/5/ HTTP/1.1

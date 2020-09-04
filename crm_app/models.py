@@ -1,8 +1,6 @@
 from django.db import models
 from django.utils import timezone
-
-# TODO fix Order model,problem with table_id and table_name
-
+from crm_user.models import MyUser
 # ! Useful material
 #  for the name of models use CapWords
 #  for the name of attr snake_case
@@ -39,15 +37,25 @@ class Meal(models.Model):
         return self.name
 
 class Table(models.Model):
+    # user can have many tables to serve
+    user_id = models.ForeignKey(MyUser,on_delete = models.SET_NULL,null=True,related_name='tebles')
     name = models.CharField(max_length = 10,unique = True)
     
     def __str__(self):
         return self.name
 
 class Order(models.Model):
-    waiter_id = models.PositiveIntegerField() # ! how it will take value
+    
+    waiter_id = models.ForeignKey(
+        MyUser,
+        null = True,
+        blank = True,
+        on_delete = models.PROTECT,
+        related_name = 'orders') 
+
     # * table won't be created since it has own create request
-    table_id = models.ForeignKey(Table,on_delete=models.CASCADE,related_name = 'orders')
+    table_id = models.ForeignKey(Table,on_delete = models.PROTECT,related_name = 'orders')
+    
     table_name = models.CharField(max_length=10,blank=True)
     # TODO make this boolean
     isitopen = models.IntegerField(default = 1) # ! how it will take value
@@ -60,7 +68,11 @@ class Order(models.Model):
 # OrderMeal table is for when
 # user ordering meal it will store orderedmeals in this table
 class OrderedMeal(models.Model):
-    meal_id = models.ForeignKey(Meal,on_delete = models.CASCADE,help_text="It's better to increase count than giving mela id twice or more")
+    meal_id = models.ForeignKey(
+        Meal,
+        on_delete = models.CASCADE,
+        help_text="It's better to increase count than giving meal id twice or more")
+
     name = models.CharField(max_length=30)
     count = models.PositiveIntegerField(default=1,blank=True)
     total_sum = models.PositiveIntegerField(null=True,blank=True)
@@ -71,7 +83,7 @@ class OrderedMeal(models.Model):
         return self.order_id.table_id.name + ' - ' + self.name + f' ({self.count})'
 
 class Check(models.Model):
-    order_id = models.OneToOneField(Order,on_delete=models.CASCADE,related_name='checks')
+    order_id = models.OneToOneField(Order,on_delete = models.CASCADE,related_name='ordercheck')
     # * date will get using Order
     # * meals will get using Order
     servicefee = models.IntegerField(default = 33) # TODO how to generate find out

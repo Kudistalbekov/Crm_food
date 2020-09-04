@@ -6,7 +6,7 @@ content-type: application/json
 
 {
     "name": "lagman",
-    "category_id": 1,
+    "category_id": 8,
     "price": 410,
     "description": "lagman kol"
 }
@@ -24,4 +24,4 @@ content-type: application/json
 DELETE http://127.0.0.1:8000/meals/8/ HTTP/1.1
 
 ###
-GET http://127.0.0.1:8000/mealsByCategory/2/ HTTP/1.1
+GET http://127.0.0.1:8000/mealsByCategory/4/ HTTP/1.1

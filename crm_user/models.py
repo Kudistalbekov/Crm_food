@@ -50,8 +50,6 @@ class MyUser(AbstractBaseUser,PermissionsMixin):
     staff =  models.BooleanField(default=False)
     superuser =  models.BooleanField(default=False)
     active =  models.BooleanField(default=True)
-
-    
     USERNAME_FIELD = 'login' # this field will be used in auth part
     REQUIRED_FIELDS = ['email']
 

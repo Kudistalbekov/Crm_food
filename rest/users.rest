@@ -6,11 +6,10 @@ PUT  http://127.0.0.1:8000/users/ HTTP/1.1
 content-type: application/json
 
 {
-  "id": 2,
-  "name": "Kudaibergen",
-  "surname": "Stalbekov",
-  "password": "131321",
-  "email": "stalbekovkudaibergen@example.com",
+  "id": 3,
+  "name": "Aidana",
+  "surname": "Stalbekova",
+  "email": "stalbekovaidana@example.com",
   "phone": "0551014345"
 }
 
@@ -19,10 +18,10 @@ POST http://127.0.0.1:8000/users/ HTTP/1.1
 content-type: application/json
 
 {
-  "name": "Kudaibergen",
-  "surname": "Stalbekov",
-  "email": "stalbekov@gmail.com",
-  "roleid": 3,
+  "name": "Aidana",
+  "surname": "Stalbekova",
+  "email": "aidana@gmail.com",
+  "roleid": 2,
   "phone": "0777777777"
 }
 
@@ -34,6 +33,6 @@ POST http://127.0.0.1:8000/login/ HTTP/1.1
 content-type: application/json
 
 {
-  "login":"Kudaibergen_Stalbekov",
+  "login":"Aidana_Stalbekova",
   "password":"0777777777"
 }

@@ -6,10 +6,11 @@ POST http://127.0.0.1:8000/tables/ HTTP/1.1
 content-type: application/json
 
 {
-  "name": "Table #4"
+  "user_id": 2 ,
+  "name": "Table6"
 }
 
 ###
-DELETE http://127.0.0.1:8000/tables/7/ HTTP/1.1
+DELETE http://127.0.0.1:8000/tables/1/ HTTP/1.1
 
 

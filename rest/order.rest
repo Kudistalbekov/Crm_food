@@ -5,19 +5,17 @@ POST http://127.0.0.1:8000/orders/ HTTP/1.1
 content-type: application/json
 
 {
-    "waiter_id": 8,
-    "table_id": 4,
-    "isitopen": 1,
+    "table_id": 2,
     "orderedmeals" : [
+        {
+            "meal_id": 2,
+            "name": "plov",
+            "count": 2
+        },
         {
             "meal_id": 1,
             "name": "cake",
-            "count": 3
-        },
-        {
-            "meal_id": 3,
-            "name": "lagman",
-            "count": 2
+            "count": 1
         }
     ]
 }

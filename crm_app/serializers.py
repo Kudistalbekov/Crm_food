@@ -29,7 +29,8 @@ class MealSerializer(serializers.ModelSerializer):
 class TableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Table
-        fields = ('id','name')
+        fields = ('id','user_id','name')
+        # TODO hide user_id when get request
 
     def create(self,validated_data):
         return Table.objects.create(**validated_data)
@@ -71,9 +72,13 @@ class OrdersOrderedMealSerializer(serializers.ModelSerializer):
         #TODO {1} create orderedmeal if does not exist
         #TODO {2} if ordered meal exist increase count
         #TODO {3} check the names of ordered meals if they don't match return error 
+        #TODO {4} update check for the current order if exist
+
         # * validate will be used when creating orderedmeal
         def validate(self,validated_data):
             order = Order.objects.get(id = self.context['order_id'])
+            check_order = Check.objects.get(order_id = order)
+
             for orderedmeal in validated_data['orderedmeals']:
                 # {3}
                 try:
@@ -96,6 +101,13 @@ class OrdersOrderedMealSerializer(serializers.ModelSerializer):
                 meal = Meal.objects.get(id = getattr(update_ordered.meal_id,'id'))
                 update_ordered.total_sum = update_ordered.count*int(meal.price)
                 update_ordered.save()
+            check_order.totalsum = 0
+            check_order.save()  
+            for meals in order.orderedmeals.all():
+                print(f'{check_order.totalsum}+{meals.total_sum}={check_order.totalsum + meals.total_sum}')
+                check_order.totalsum=int(check_order.totalsum)+int(meals.total_sum)
+            check_order.save()  
+            
             return update_ordered
 
  
@@ -111,12 +123,14 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         # ! added waiter_id and isitopen by myself.
         fields = ('id','waiter_id','table_id','table_name','isitopen','date','orderedmeals')
-        
+        extra_kwargs = {'waiter_id': {'required': False},'isitopen_id':{'required': False}}
+
     def create(self,validated_data):
         orderedmeals = validated_data.pop('orderedmeals')
         order = Order.objects.create(**validated_data)
-        # * fill table_name
+        # TODO fill table_name,waiter_for this order,is_it_open
         table = Table.objects.get(id = getattr(order.table_id,'id'))
+        order.waiter_id = table.user_id
         order.table_name = table.name
         order.save()
         # * creating ordered_meals
@@ -127,7 +141,6 @@ class OrderSerializer(serializers.ModelSerializer):
             meal = Meal.objects.get(id = getattr(new_ordered.meal_id,'id'))
             new_ordered.total_sum = new_ordered.count*int(meal.price)
             new_ordered.save()
-
         return order
 
 class MealSerializerUpdate(serializers.Serializer):
