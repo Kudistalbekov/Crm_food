@@ -303,11 +303,29 @@ class CheckDetailAPI(APIView):
         return HandleResponse('no data','Check was deleted')
 
 class MealsToOrderAPI(APIView):
-    def post(self,request):
+    
+    def get_order(self,id):
         try:
-            Order.objects.get(id=request.data.get('order_id'))
-        except:
+            return Order.objects.get(id = id)
+        except Order.DoesNotExist:
             return HandleResponse('no data','Order with this id does not exist',False,'not found order',status.HTTP_404_NOT_FOUND)
+    
+    def get_meal(self,id):
+        try:
+            return Meal.objects.get(id = id)
+        except Meal.DoesNotExist:
+            return HandleResponse('no data','Meal with this id does not exist',False,'not found Meal',status.HTTP_404_NOT_FOUND)
+
+    def get_orderedmeal(self,order,meal):
+        try:
+            return OrderedMeal.objects.get(order_id = order,meal_id = meal)
+        except OrderedMeal.DoesNotExist:
+            return HandleResponse('no data','OrderedMeal with this credential does not exist',False,'not found Meal',status.HTTP_404_NOT_FOUND)
+
+    def post(self,request):
+        order = self.get_order(request.data.get('order_id'))
+        if type(order) == Response:
+            return order
         # * we can use "context" to pass extra value
         serializer = OrdersOrderedMealSerializer(data = request.data, context={'order_id': request.data.get('order_id')})
         if serializer.is_valid():
@@ -315,7 +333,27 @@ class MealsToOrderAPI(APIView):
         return HandleResponse('no data','Could not add meals',False,serializer.errors,status.HTTP_400_BAD_REQUEST)
     
     def put(self,request):
-        return HandleResponse('no data','Ordered meal is deleted')
+        order = self.get_order(request.data.get('order_id'))
+        meal = self.get_meal(request.data.get('meal_id'))
+
+        if type(order) == Response:
+            return order
+        
+        if type(meal) == Response:
+            return meal
+
+        # updating ordered meals
+        ordered_meal = self.get_orderedmeal(order,meal)
+        
+        if type(ordered_meal) == Response:
+            return ordered_meal
+
+        serilizer = OrderedMealSerializer(ordered_meal,data = request.data,context = {'meal':meal})
+        if serilizer.is_valid():
+            # updating and creating will be on .save() method
+            serilizer.save()
+            return HandleResponse('no data','Ordered meal is deleted')
+        return HandleResponse('no data','Ordered meal could not be deleted',False,serilizer.errors,status.HTTP_400_BAD_REQUEST)
 
 class MealsToOrderDetailAPI(APIView):
     def get(self,request,id):

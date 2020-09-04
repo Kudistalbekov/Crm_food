@@ -38,7 +38,25 @@ class OrderedMealSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderedMeal
         fields = ['meal_id','name','count']
+        extra_kwargs = {'name': {'required': False}}
 
+    # * update will be used when deleting ordered_meal
+    # TODO (1) if orderedmeal in db decrease (count,total_sum)
+    # TODO (2) if orderedmeal in db and count is 1 delete ordered meal
+    
+    def update(self,orderedmeal,validated_data):
+        # {2}
+        print(orderedmeal)
+        # if count not given , delete 1 meal
+        if orderedmeal.count == 1 or orderedmeal.count <= validated_data.get('count'):
+            orderedmeal.delete()
+            return orderedmeal 
+        # {1}
+        orderedmeal.count -= validated_data.get('count',1)
+        orderedmeal.total_sum = orderedmeal.count*int(self.context['meal'].price)
+        orderedmeal.save()
+        return orderedmeal
+    
 
 # * first serializer will give me id of order 
 # * and rest will take using OrderedMealSerializer
@@ -80,9 +98,7 @@ class OrdersOrderedMealSerializer(serializers.ModelSerializer):
                 update_ordered.save()
             return update_ordered
 
-        # * update will be used when deleting ordered_meal
-        def update(self,orderedmeal,validated_data):
-            pass
+ 
 class OrderSerializer(serializers.ModelSerializer):
     # TODO remember this
     # * orderedmeals is taken from reverse lookup name field

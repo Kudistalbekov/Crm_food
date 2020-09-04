@@ -24,8 +24,8 @@ content-type: application/json
 PUT http://127.0.0.1:8000/mealsToOrder/ HTTP/1.1
 content-type: application/json
 
-{
-  "orderid": 1,
-  "mealid": 3,
-  "count": 1
-}
+    {
+    "order_id": 1,
+    "meal_id": 2,
+    "count": 1
+    }

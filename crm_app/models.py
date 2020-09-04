@@ -30,7 +30,7 @@ class MealCategory(models.Model):
 class Meal(models.Model):
     name = models.CharField(max_length=30,unique=True)
     category_id = models.ForeignKey(MealCategory,on_delete=models.CASCADE,related_name='meals')
-    price = models.IntegerField()
+    price = models.PositiveIntegerField()
     # ! don't use null = True for text-based fields CharField and TextField
     # ! Two possible values for “no data,” that is: None and an empty string.
     description = models.TextField(blank = True) # * Optional
@@ -45,10 +45,11 @@ class Table(models.Model):
         return self.name
 
 class Order(models.Model):
-    waiter_id = models.IntegerField() # ! how it will take value
+    waiter_id = models.PositiveIntegerField() # ! how it will take value
     # * table won't be created since it has own create request
     table_id = models.ForeignKey(Table,on_delete=models.CASCADE,related_name = 'orders')
     table_name = models.CharField(max_length=10,blank=True)
+    # TODO make this boolean
     isitopen = models.IntegerField(default = 1) # ! how it will take value
     date = models.DateTimeField(default = timezone.now)
     # * all meals will be created in orderedmeals table
@@ -61,8 +62,8 @@ class Order(models.Model):
 class OrderedMeal(models.Model):
     meal_id = models.ForeignKey(Meal,on_delete = models.CASCADE,help_text="It's better to increase count than giving mela id twice or more")
     name = models.CharField(max_length=30)
-    count = models.IntegerField(default=1,blank=True)
-    total_sum = models.IntegerField(null=True,blank=True)
+    count = models.PositiveIntegerField(default=1,blank=True)
+    total_sum = models.PositiveIntegerField(null=True,blank=True)
     # * many meal has one order
     order_id = models.ForeignKey(Order,on_delete = models.CASCADE,related_name = 'orderedmeals')
 
@@ -75,7 +76,7 @@ class Check(models.Model):
     # * meals will get using Order
     servicefee = models.IntegerField(default = 33) # TODO how to generate find out
     # * sum of all meals
-    totalsum = models.IntegerField(default=0)
+    totalsum = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.order_id.table_name
