@@ -111,6 +111,21 @@ class UserAPI(APIView):
             serializer.save()
             return HandleResponse('no data','User was updated',resp_status=status.HTTP_200_OK)
         return HandleResponse('no data','Json format is wrong',True,serializer.errors,status.HTTP_404_NOT_FOUND)
+    
+    # ! PUT is for updating entire resourse
+    # ! PATCH is for updating just some fields    
+    
+    def patch(self,request):
+        serializer = LoginSerializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
+        user = serializer.validated_data["user"]
+        newpassword = request.data.get('newpassword',"")
+        print(newpassword)
+        if not(newpassword):
+            return HandleResponse('nodata','newpassword has to be given',False,'newpassword missed',status.HTTP_400_BAD_REQUEST)
+        user.set_password(newpassword)
+        user.save()
+        return HandleResponse({"login":user.login},'Password is changed')
 
 class UserDetailAPI(APIView):
     

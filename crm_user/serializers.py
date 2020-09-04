@@ -19,6 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
         surname = validated_data.get('surname')
         email = validated_data.get('email')
         phone = validated_data.get('phone')
+        # * im giving phone number as password for the first password
         user = MyUser.objects.create_user(name+'_'+surname,email,phone)
         user.name = name
         user.surname = surname
@@ -59,10 +60,11 @@ class LoginSerializer(serializers.Serializer):
         password = data.get("password","")
         
         if login and password:
+            # * authentication
             user = authenticate(username = login,password = password)
             if user:
                 if user.is_active:
-                    data["user"]=user
+                    data["user"] = user
                 else:
                     msg =  'account is disabled'
                     raise exceptions.ValidationError(msg)
