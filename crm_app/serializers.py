@@ -8,7 +8,7 @@ from crm_app.models import (
     ServicePercentage,
     Status,
     OrderedMeal)
-
+    
 from rest_framework import serializers , fields
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -44,18 +44,20 @@ class OrderedMealSerializer(serializers.ModelSerializer):
     # * update will be used when deleting ordered_meal
     # TODO (1) if orderedmeal in db decrease (count,total_sum)
     # TODO (2) if orderedmeal in db and count is 1 delete ordered meal
-    
     def update(self,orderedmeal,validated_data):
+        check = Check.objects.get(order_id = orderedmeal.order_id)
         # {2}
-        print(orderedmeal)
         # if count not given , delete 1 meal
-        if orderedmeal.count == 1 or orderedmeal.count <= validated_data.get('count'):
+        if (
+            orderedmeal.count == 1 or 
+            orderedmeal.count <= validated_data.get('count')):
             orderedmeal.delete()
-            return orderedmeal 
+            return orderedmeal
         # {1}
         orderedmeal.count -= validated_data.get('count',1)
         orderedmeal.total_sum = orderedmeal.count*int(self.context['meal'].price)
         orderedmeal.save()
+        check.set_totalsum()
         return orderedmeal
     
 
@@ -78,7 +80,7 @@ class OrdersOrderedMealSerializer(serializers.ModelSerializer):
         def validate(self,validated_data):
             order = Order.objects.get(id = self.context['order_id'])
             check_order = Check.objects.get(order_id = order)
-
+            ordered_meal = OrderedMeal()
             for orderedmeal in validated_data['orderedmeals']:
                 # {3}
                 try:
@@ -90,25 +92,17 @@ class OrdersOrderedMealSerializer(serializers.ModelSerializer):
                 try:
                     OrderedMeal.objects.get(order_id = order,meal_id = orderedmeal['meal_id'])
                 except OrderedMeal.DoesNotExist:
+                    print('ordered meal does not exist creating')
                     new_ordered = OrderedMeal.objects.create(**orderedmeal,order_id = order)
-                    meal = Meal.objects.get(id = getattr(new_ordered.meal_id,'id'))
-                    new_ordered.total_sum = new_ordered.count*int(meal.price)
-                    new_ordered.save()
+                    new_ordered.set_total_sum()
                     continue
                 #{2}
-                update_ordered = OrderedMeal.objects.get(order_id = order,meal_id = orderedmeal['meal_id']) 
-                update_ordered.count+=orderedmeal.get('count',1)
-                meal = Meal.objects.get(id = getattr(update_ordered.meal_id,'id'))
-                update_ordered.total_sum = update_ordered.count*int(meal.price)
-                update_ordered.save()
-            check_order.totalsum = 0
-            check_order.save()  
-            for meals in order.orderedmeals.all():
-                print(f'{check_order.totalsum}+{meals.total_sum}={check_order.totalsum + meals.total_sum}')
-                check_order.totalsum=int(check_order.totalsum)+int(meals.total_sum)
-            check_order.save()  
-            
-            return update_ordered
+                ordered_meal = OrderedMeal.objects.get(order_id = order,meal_id = orderedmeal['meal_id']) 
+                ordered_meal.count+=orderedmeal.get('count',1)
+                ordered_meal.set_total_sum()
+            # updating check 
+            check_order.set_totalsum()
+            return ordered_meal
 
  
 class OrderSerializer(serializers.ModelSerializer):
@@ -138,9 +132,7 @@ class OrderSerializer(serializers.ModelSerializer):
             # * Here we are saying create new ordered_meal
             # * whicn has order_id = id of given order
             new_ordered = OrderedMeal.objects.create(**orderedmeal,order_id = order)
-            meal = Meal.objects.get(id = getattr(new_ordered.meal_id,'id'))
-            new_ordered.total_sum = new_ordered.count*int(meal.price)
-            new_ordered.save()
+            new_ordered.set_total_sum()
         return order
 
 class MealSerializerUpdate(serializers.Serializer):
@@ -172,13 +164,25 @@ class OrderCheckSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ('id','date','orderedmeals')
-       
+
+class ServicePercentageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicePercentage
+        fields = ('id','percentage')
+
 class CheckSerializer(serializers.ModelSerializer):
     order_id = OrderCheckSerializer()
     class Meta:
         model = Check
         fields = ('id','order_id','servicefee','totalsum')
     
+    def create(self,validated_data):
+        check = Check.objects.create(**validated_data)
+        servefee = ServicePercentage.objects.all().first()
+        check.servicefee = getattr(servefee,'id')
+        check.set_totalsum()          
+        return check
+
     def to_representation(self,data):
         new_data = super(CheckSerializer,self).to_representation(data)
         return {
@@ -197,16 +201,10 @@ class CheckPostSerializer(serializers.ModelSerializer):
     
     def create(self,validated_data):
         check = Check.objects.create(**validated_data)
-        order = Order.objects.get(id = validated_data.get('order_id').id)
-        for meals in order.orderedmeals.all():
-            check.totalsum=int(check.totalsum)+int(meals.total_sum)
-        check.save()            
+        check.set_totalsum()          
         return check
 
-class ServicePercentageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ServicePercentage
-        fields = ('id','percentage')
+
 
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:

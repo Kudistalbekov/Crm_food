@@ -45,7 +45,7 @@ class MyUser(AbstractBaseUser,PermissionsMixin):
     email = models.CharField(max_length=40,unique=True,name='email')
     roleid = models.ForeignKey(UserRole,null=True,on_delete=models.CASCADE,name='roleid',related_name='users')
     dateofadd = models.DateTimeField(default = timezone.now)
-    phone = models.CharField(max_length=20,null=True,blank=True,name='phone')
+    phone = models.CharField(max_length=20,name='phone',null = True)
     admin = models.BooleanField(default=False)
     staff =  models.BooleanField(default=False)
     superuser =  models.BooleanField(default=False)

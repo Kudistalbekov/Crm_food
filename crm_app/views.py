@@ -31,6 +31,7 @@ from crm_app.serializers import (
                                     CheckPostSerializer,
                                     OrderedMealSerializer,
                                     OrdersOrderedMealSerializer,
+                                    ServicePercentageSerializer,
                                     )
 
 # Create your views here.
@@ -52,7 +53,6 @@ def HandleResponse(data,message,success = True,err = 'no err',resp_status = stat
     },status = resp_status)
 
 class TableAPI(APIView):
-
     def get(self,request):
         data = Table.objects.all()
         serializer = TableSerializer(data,many=True)
@@ -67,16 +67,8 @@ class TableAPI(APIView):
         return HandleResponse("no data",'Could not create a Table',False,serializer.errors,status.HTTP_404_NOT_FOUND)
 
 class TableDeateilAPI(APIView):
-    
-    def get_table(self,id):
-        try:
-            return Table.objects.get(id=id)
-        except Table.DoesNotExist:
-            return HandleResponse('no data',f"Object {id} is not found",False,resp_status = status.HTTP_404_NOT_FOUND)
-
     def delete(self,request,id):
-        obj=self.get_table(id)
-
+        obj = Table.objects.get_table(id=id)
         #if object is not exist return the returned error
         if type(obj) == Response:
             return obj
@@ -85,7 +77,6 @@ class TableDeateilAPI(APIView):
         return HandleResponse('no data',f"Table {id} is deleted")
 
 class DepartmentAPI(APIView):
-    
     def get(self,request):
         data = Department.objects.all()
         serializer = DepartmentSerializer(data,many=True)
@@ -100,16 +91,9 @@ class DepartmentAPI(APIView):
         return HandleResponse('no data','Could not create a new Department',False,serializer.errors,status.HTTP_400_BAD_REQUEST)
 
 class DepartmentDetailAPI(APIView):
-
-    def get_department(self,id):
-        try:
-            return Department.objects.get(id=id)
-        except Department.DoesNotExist:
-            return HandleResponse('no data',f"Department {id} does'n exist.",False,resp_status = status.HTTP_404_NOT_FOUND)
-    
     def delete(self,request,id):
-        data=self.get_department(id)
-        if type(data)==Response:
+        data = Department.objects.get_department(id)
+        if type(data) == Response:
             return data
         data.delete()
         return HandleResponse('no data',f"Department {id} is deleted")
@@ -122,37 +106,30 @@ class MealCategoryAPI(APIView):
         return HandleResponse(serializer.data,"List of all MealCategories")
 
     def post(self,request):
-        datajson = request.data
-        meal_category = MealCategorySeriailizer(data = datajson)
+        meal_category = MealCategorySeriailizer(data = request.data)
         if meal_category.is_valid():
             meal_category.save()
             return HandleResponse('no data','MealCategory created succesfully',resp_status=status.HTTP_201_CREATED) 
         return HandleResponse('no data','Json format is wrong',False,meal_category.errors,status.HTTP_400_BAD_REQUEST)
 
 class MealCategoryDetailAPI(APIView):
-    
-    def get_meal_category(self,id):
-        try:
-            return MealCategory.objects.get(id=id)
-        except MealCategory.DoesNotExist:
-            return HandleResponse('no data',f'Could not get object {id}',False,'object does not exist',status.HTTP_404_NOT_FOUND)
-
     def get(self,request,id):
-        try:
-            Department.objects.get(id = id)
-        except Department.DoesNotExist:
-            return HandleResponse('no data','Could not find Department with this id',
-            False,f'Department does not exist with id {id}',status.HTTP_404_NOT_FOUND)
-        department = Department.objects.get(id = id)
+        department = Department.objects.get_department(id = id)
+
+        if type(department) == Response:
+            return department
+
         data = department.meal_categories.all()
         serializer = MealCategorySeriailizer(data,many = True)
         return HandleResponse(serializer.data,f'MealCategories with {id} department_id')
 
     def delete(self,request,id):
-        data = self.get_meal_category(id)
+        data = MealCategory.objects.get_meal_category(id)
+
         if not(type(data)==Response):
             data.delete()
             return HandleResponse('no data',f'MealCategory {id} is deleted')
+
         return data
 
 class StatusAPI(APIView):
@@ -173,10 +150,10 @@ class StatusAPI(APIView):
 class StatusDetailAPI(APIView):
     
     def delete(self,request,id):
-        try:
-            Status.objects.get(id = id)
-        except Status.DoesNotExist:
-            return HandleResponse('no data','Could not found status',False,'Object does not exist',status.HTTP_404_NOT_FOUND)
+        status = Status.objects.get_status(id = id)
+        
+        if status == Response:
+            return status
 
         obj = Status.objects.get(id=id)
         obj.delete()
@@ -197,6 +174,7 @@ class MealAPI(APIView):
             return HandleResponse('no data','Created new Meal',status.HTTP_201_CREATED)
         return HandleResponse('no data','Could not create Meal',False,serialized.errors,status.HTTP_400_BAD_REQUEST)
 
+    # TODO write method for updating meal in serializer
     def put(self,request):
         jsondata = request.data
         serialized_check = MealSerializerUpdate(data = jsondata)
@@ -212,36 +190,43 @@ class MealAPI(APIView):
 class MealDetailAPI(APIView):
     
     def get(serf,request,id):
-        try:
-            MealCategory.objects.get(id = id)
-        except MealCategory.DoesNotExist:
-            return HandleResponse('no data','Could not find Meal_category with this id',
-            False,f'Meal_category_id {id} does not exist',status.HTTP_404_NOT_FOUND)
-
-        category = MealCategory.objects.get(id = id)
-        data = category.meals.all()
-
-        s = MealSerializer(data,many = True)
-        return HandleResponse(s.data,f'List of Meals with category_id {id}')
+        data = MealCategory.objects.get_meal_category(id)
+        if not(type(data)==Response):
+            category = MealCategory.objects.get(id = id)
+            data = category.meals.all()
+            s = MealSerializer(data,many = True)
+            return HandleResponse(s.data,f'List of Meals with category_id {id}')
+        return data
 
     def delete(self,request,id):
-        try:
-            Meal.objects.get(id=id)
-        except Meal.DoesNotExist:
-            return HandleResponse('no data',
-                                    'Could not find Meal with this id',
-                                    False,
-                                    f'Meal with id = {id} does not exist',
-                                    status.HTTP_404_NOT_FOUND)
-        meal = Meal.objects.get(id = id)
-        meal.delete()
-        return HandleResponse('no data','Meal was deleted successfully')
+        meal = Meal.objects.get_meal(id = id)
+        if not type(meal)==Response:
+            meal.delete()
+            return HandleResponse('no data','Meal was deleted successfully')
+        return meal
 
 class ServicePercentageAPI(APIView):
-    pass
 
-class ServicePercentageDetail(APIView):
-    pass
+    def get(self,request):
+        data = ServicePercentage.objects.all()
+        ser = ServicePercentageSerializer(data,many = True)
+        return HandleResponse(ser.data,'ServicePercentage list')
+
+    # * when post called i will update same servicepercentage
+    # * no need to create new
+    def post(self,request):
+        ser = ServicePercentageSerializer(data = request.data)
+        if ser.is_valid():
+            ser.save()
+            return HandleResponse('Added','ServicePercentage created',resp_status = status.HTTP_201_CREATED)
+        return HandleResponse('no data','Could not add',False,ser.errors,status.HTTP_400_BAD_REQUEST)
+
+class ServicePercentageDetailAPI(APIView):
+
+    def delete(self,request,id):
+        percentage = ServicePercentage.objects.get(id = id)
+        percentage.delete()
+        return HandleResponse('no data','Service Percentage Deleted')
 
 class OrderAPI(APIView):
     def get(self,request):
@@ -277,6 +262,7 @@ class GetOpenStatusAPI(APIView):
         return HandleResponse(serializer.data,'List of opened orders')
 
 class CheckAPI(APIView):
+
     def get(self,request):
         data = Check.objects.all()
         check = CheckSerializer(data,many = True)
@@ -303,27 +289,8 @@ class CheckDetailAPI(APIView):
         return HandleResponse('no data','Check was deleted')
 
 class MealsToOrderAPI(APIView):
-    
-    def get_order(self,id):
-        try:
-            return Order.objects.get(id = id)
-        except Order.DoesNotExist:
-            return HandleResponse('no data','Order with this id does not exist',False,'not found order',status.HTTP_404_NOT_FOUND)
-    
-    def get_meal(self,id):
-        try:
-            return Meal.objects.get(id = id)
-        except Meal.DoesNotExist:
-            return HandleResponse('no data','Meal with this id does not exist',False,'not found Meal',status.HTTP_404_NOT_FOUND)
-
-    def get_orderedmeal(self,order,meal):
-        try:
-            return OrderedMeal.objects.get(order_id = order,meal_id = meal)
-        except OrderedMeal.DoesNotExist:
-            return HandleResponse('no data','OrderedMeal with this credential does not exist',False,'not found Meal',status.HTTP_404_NOT_FOUND)
-
     def post(self,request):
-        order = self.get_order(request.data.get('order_id'))
+        order = Order.objects.get_order(request.data.get('order_id'))
         if type(order) == Response:
             return order
         # * we can use "context" to pass extra value
@@ -332,9 +299,10 @@ class MealsToOrderAPI(APIView):
             return HandleResponse('no data','meals added',resp_status=status.HTTP_201_CREATED)
         return HandleResponse('no data','Could not add meals',False,serializer.errors,status.HTTP_400_BAD_REQUEST)
     
+    # deleting ordered meal
     def put(self,request):
-        order = self.get_order(request.data.get('order_id'))
-        meal = self.get_meal(request.data.get('meal_id'))
+        order = Order.objects.get_order(request.data.get('order_id'))
+        meal = Meal.objects.get_meal(request.data.get('meal_id'))
 
         if type(order) == Response:
             return order
@@ -343,7 +311,7 @@ class MealsToOrderAPI(APIView):
             return meal
 
         # updating ordered meals
-        ordered_meal = self.get_orderedmeal(order,meal)
+        ordered_meal = OrderedMeal.objects.get_orderedmeal(order,meal)
         
         if type(ordered_meal) == Response:
             return ordered_meal
@@ -357,10 +325,8 @@ class MealsToOrderAPI(APIView):
 
 class MealsToOrderDetailAPI(APIView):
     def get(self,request,id):
-        try:
-            Order.objects.get(id = id)
-        except Order.DoesNotExist:
-            return HandleResponse('no data','Could not get data',False,'order does not exist',status.HTTP_404_NOT_FOUND)
-        order = Order.objects.get(id = id)
+        order = Order.objects.get_order(id = id)
+        if type(order) == Response:
+            return order
         serializer = OrdersOrderedMealSerializer(order)
         return HandleResponse(serializer.data,'List of ordered_meal of order')

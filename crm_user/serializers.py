@@ -12,7 +12,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
         fields = ['id','name','surname','login','email','roleid','phone']
-    
+        extra_kwargs = {'phone': {'required': True}}
+
     def create(self, validated_data):
         '''method for creating user'''
         name = validated_data.get('name')
@@ -24,6 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.name = name
         user.surname = surname
         user.roleid = validated_data.get('roleid')
+        user.phone = phone
         user.save()
         return user
 

@@ -120,7 +120,6 @@ class UserAPI(APIView):
         serializer.is_valid(raise_exception = True)
         user = serializer.validated_data["user"]
         newpassword = request.data.get('newpassword',"")
-        print(newpassword)
         if not(newpassword):
             return HandleResponse('nodata','newpassword has to be given',False,'newpassword missed',status.HTTP_400_BAD_REQUEST)
         user.set_password(newpassword)

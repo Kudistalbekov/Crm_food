@@ -26,7 +26,9 @@ from crm_app.views  import(
     CheckAPI,
     CheckDetailAPI,
     MealsToOrderAPI,
-    MealsToOrderDetailAPI
+    MealsToOrderDetailAPI,
+    ServicePercentageAPI,
+    ServicePercentageDetailAPI,
 )
 
 urlpatterns = [
@@ -56,5 +58,8 @@ urlpatterns = [
     path('checks/',CheckAPI.as_view()),
     path('checks/<int:id>/',CheckDetailAPI.as_view()),
     path('mealsToOrder/',MealsToOrderAPI.as_view()),
-    path('mealsToOrder/<int:id>/',MealsToOrderDetailAPI.as_view())
+    path('mealsToOrder/<int:id>/',MealsToOrderDetailAPI.as_view()),
+    path('servicePercentage/',ServicePercentageAPI.as_view()),
+    path('servicePercentage/<int:id>/',ServicePercentageDetailAPI.as_view())
+
 ]
