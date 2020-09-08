@@ -1,5 +1,5 @@
-from crm_app.models import * 
-
+from crm_app.functions import HandleResponse
+from crm_app.models import *
 
 class DepartmentManager(models.Manager):
     def get_department(self,id):

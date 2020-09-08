@@ -10,6 +10,7 @@ from crm_app.models import (
     OrderedMeal)
     
 from rest_framework import serializers , fields
+from rest_framework.response import Response
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,20 +18,39 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields = ('id','name')
     
 class MealCategorySeriailizer(serializers.ModelSerializer):
+    
     class Meta:
         model = MealCategory
         fields = ('id','name','department_id')
 
 class MealSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Meal
         fields = ['id','name','category_id','price','description']
 
+class MealSerializerUpdate(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField(required=False)
+    category_id = serializers.IntegerField(required=False)
+    price = serializers.CharField(required=False)
+    description = serializers.CharField(required=False,allow_blank=True)
+
+    def update(self,meal,validated_data):
+
+        for key_val in validated_data:
+            setattr(meal,key_val,validated_data.get(key_val))
+
+        meal.save()
+        return meal
+
 class TableSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Table
         fields = ('id','user_id','name')
-        # TODO hide user_id when get request
+        extra_kwargs = {'user_id': {'write_only' : True}}
+        
 
     def create(self,validated_data):
         return Table.objects.create(**validated_data)
@@ -60,11 +80,6 @@ class OrderedMealSerializer(serializers.ModelSerializer):
         check.set_totalsum()
         return orderedmeal
     
-
-# * first serializer will give me id of order 
-# * and rest will take using OrderedMealSerializer
-# * reverse access
-
 class OrdersOrderedMealSerializer(serializers.ModelSerializer):
         orderedmeals = OrderedMealSerializer(many = True)
         class Meta:
@@ -131,16 +146,19 @@ class OrderSerializer(serializers.ModelSerializer):
         for orderedmeal in orderedmeals:
             # * Here we are saying create new ordered_meal
             # * whicn has order_id = id of given order
-            new_ordered = OrderedMeal.objects.create(**orderedmeal,order_id = order)
-            new_ordered.set_total_sum()
+            print(orderedmeal)
+            meal = OrderedMeal.objects.get_orderedmeal(order = order,meal = orderedmeal['meal_id'])
+            if type(meal) == Response:
+                # no found
+                new_ordered = OrderedMeal.objects.create(**orderedmeal,order_id = order)
+                new_ordered.set_total_sum()
+                continue
+            meal.count+=orderedmeal.get('count')
+            meal.set_total_sum()
+            meal.save()
         return order
 
-class MealSerializerUpdate(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField(required=False)
-    category_id = serializers.IntegerField(required=False)
-    price = serializers.CharField(required=False)
-    description = serializers.CharField(required=False,allow_blank=True)
+
 
 class OrderedCheckMealSerializer(serializers.ModelSerializer):
     class Meta:
@@ -158,7 +176,6 @@ class OrderedCheckMealSerializer(serializers.ModelSerializer):
             'total_sum':new_data['total_sum']
         }
 
-
 class OrderCheckSerializer(serializers.ModelSerializer):
     orderedmeals = OrderedCheckMealSerializer(many = True)
     class Meta:
@@ -172,16 +189,11 @@ class ServicePercentageSerializer(serializers.ModelSerializer):
 
 class CheckSerializer(serializers.ModelSerializer):
     order_id = OrderCheckSerializer()
+    servicefee = ServicePercentageSerializer()
     class Meta:
         model = Check
         fields = ('id','order_id','servicefee','totalsum')
-    
-    def create(self,validated_data):
-        check = Check.objects.create(**validated_data)
-        servefee = ServicePercentage.objects.all().first()
-        check.servicefee = getattr(servefee,'id')
-        check.set_totalsum()          
-        return check
+
 
     def to_representation(self,data):
         new_data = super(CheckSerializer,self).to_representation(data)
@@ -189,7 +201,7 @@ class CheckSerializer(serializers.ModelSerializer):
             "id":new_data['id'],
             "ordered_id":new_data['order_id']['id'],
             "date":new_data['order_id']['date'],
-            "servicefee":new_data['servicefee'],
+            "servicefee":new_data['servicefee']['percentage'],
             "totalsum":new_data['totalsum'],
             "meals":new_data['order_id']['orderedmeals']
         }
@@ -201,13 +213,12 @@ class CheckPostSerializer(serializers.ModelSerializer):
     
     def create(self,validated_data):
         check = Check.objects.create(**validated_data)
+        servefee = ServicePercentage.objects.all().first()
+        check.servicefee = servefee
         check.set_totalsum()          
         return check
-
-
 
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Status
         fields = ('id','name')
-

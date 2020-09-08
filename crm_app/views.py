@@ -7,6 +7,7 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import status 
 from rest_framework.decorators import action
+from crm_app.functions import HandleResponse
 
 from crm_app.models import (
                             Department,
@@ -33,24 +34,6 @@ from crm_app.serializers import (
                                     OrdersOrderedMealSerializer,
                                     ServicePercentageSerializer,
                                     )
-
-# Create your views here.
-def HandleResponse(data,message,success = True,err = 'no err',resp_status = status.HTTP_200_OK):
-    """
-    HandleResponse , makes easier to send Response
-    Equalent to Response({
-            'success':success,
-            "error":err,
-            "message":message,
-            "data":data
-        },status = resp_status)
-    """
-    return Response({
-        'success':success,
-        "error":err,
-        "message":message,
-        "data":data
-    },status = resp_status)
 
 class TableAPI(APIView):
     def get(self,request):
@@ -174,16 +157,15 @@ class MealAPI(APIView):
             return HandleResponse('no data','Created new Meal',status.HTTP_201_CREATED)
         return HandleResponse('no data','Could not create Meal',False,serialized.errors,status.HTTP_400_BAD_REQUEST)
 
-    # TODO write method for updating meal in serializer
     def put(self,request):
         jsondata = request.data
-        serialized_check = MealSerializerUpdate(data = jsondata)
+        meal_update = Meal.objects.get(id = jsondata['id'])
+        serialized_check = MealSerializerUpdate(meal_update,data = jsondata)
+        
         if serialized_check.is_valid():
-            meal_update = Meal.objects.get(id = jsondata['id'])
-            for key_val in jsondata:
-                setattr(meal_update,key_val,jsondata[key_val])
-            meal_update.save()
+            serialized_check.save()
             return HandleResponse('no data','Meal was updated')
+
         return HandleResponse('no data',
         'Could not update Meal',False,serialized_check.errors,status.HTTP_400_BAD_REQUEST)
 
@@ -285,10 +267,13 @@ class CheckDetailAPI(APIView):
             return HandleResponse('no data','Could not Delete',False,'Does not exist',status.HTTP_404_NOT_FOUND)
 
         check = Check.objects.get(id = id)
+        order = Order.objects.get(id = getattr(check.order_id,'id'))
+        order.delete()
         check.delete()
         return HandleResponse('no data','Check was deleted')
 
 class MealsToOrderAPI(APIView):
+
     def post(self,request):
         order = Order.objects.get_order(request.data.get('order_id'))
         if type(order) == Response:
@@ -309,7 +294,7 @@ class MealsToOrderAPI(APIView):
         
         if type(meal) == Response:
             return meal
-
+            
         # updating ordered meals
         ordered_meal = OrderedMeal.objects.get_orderedmeal(order,meal)
         
@@ -321,7 +306,13 @@ class MealsToOrderAPI(APIView):
             # updating and creating will be on .save() method
             serilizer.save()
             return HandleResponse('no data','Ordered meal is deleted')
-        return HandleResponse('no data','Ordered meal could not be deleted',False,serilizer.errors,status.HTTP_400_BAD_REQUEST)
+        
+        return HandleResponse(
+            'no data',
+            'Ordered meal could not be deleted',
+            False,
+            serilizer.errors,
+            status.HTTP_400_BAD_REQUEST)
 
 class MealsToOrderDetailAPI(APIView):
     def get(self,request,id):

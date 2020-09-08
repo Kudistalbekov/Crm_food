@@ -43,6 +43,8 @@ class MyUser(AbstractBaseUser,PermissionsMixin):
     surname = models.CharField(max_length=30,name='surname')
     login = models.CharField(max_length=30,unique=True,null=True,name='login')
     email = models.CharField(max_length=40,unique=True,name='email')
+    # * Role can have many users 
+    # * User have one Role
     roleid = models.ForeignKey(UserRole,null=True,on_delete=models.CASCADE,name='roleid',related_name='users')
     dateofadd = models.DateTimeField(default = timezone.now)
     phone = models.CharField(max_length=20,name='phone',null = True)
@@ -50,6 +52,7 @@ class MyUser(AbstractBaseUser,PermissionsMixin):
     staff =  models.BooleanField(default=False)
     superuser =  models.BooleanField(default=False)
     active =  models.BooleanField(default=True)
+    
     USERNAME_FIELD = 'login' # this field will be used in auth part
     REQUIRED_FIELDS = ['email']
 
